@@ -15,7 +15,7 @@ class SlobsSocket {
     this.subscriptions = {}
   }
 
-  connect() {
+  connect(openCallback, closeCallback) {
     if (this.connectionStatus !== 'disconnected') {
       return false
     }
@@ -25,7 +25,7 @@ class SlobsSocket {
     this.socket.onopen = () => {
       this.request('TcpServerService', 'auth', this.token).then(() => {
         this.connectionStatus = 'connected'
-        this.onConnectHandler()
+        openCallback()
       }).catch(e => {
         console.error(e.message)
       })
@@ -37,7 +37,7 @@ class SlobsSocket {
 
     this.socket.onclose = (e) => {
       this.connectionStatus = 'disconnected'
-      console.log('socket closed: ', e)
+      closeCallback()
     }
   }
 
@@ -75,7 +75,6 @@ class SlobsSocket {
   }
 
   onConnectHandler() {
-    console.log('connected')
   }
 
   onMessageHandler(data) {
