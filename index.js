@@ -3,9 +3,7 @@
 const SlobsSocket = require('./src/SlobsSocket')
 const keypress = require('keypress')
 
-const ip = '192.168.0.140'
-const port = 59650
-const token = '74ec3c4dc1bca34ca4e7cbcba0812ea6a16d402c'
+const { ip, port, token } = require('./config.js')
 
 const slobs = new SlobsSocket(ip, port, token)
 
