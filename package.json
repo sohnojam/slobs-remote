@@ -1,0 +1,19 @@
+{
+  "name": "slobs-remote",
+  "version": "0.1.0",
+  "description": "Streamlabs OBS Remote",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sohnojam/slobs-remote.git"
+  },
+  "author": "João 'Jam' Moraes",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sohnojam/slobs-remote/issues"
+  },
+  "homepage": "https://github.com/sohnojam/slobs-remote#readme"
+}
