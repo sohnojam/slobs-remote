@@ -13,6 +13,7 @@ let tempResources = {
   breakPrevSceneId: null,
 }
 let state = 'init'
+let scenes = []
 
 keypress(process.stdin)
 process.stdin.on('keypress', (ch, key) => {
@@ -20,7 +21,13 @@ process.stdin.on('keypress', (ch, key) => {
   // ESC = init
   if (key && key.name == 'escape') {
     if (state === 'init' || slobs.connectionStatus !== 'connected') {
-      slobs.connect(() => state = 'main', () => state = 'init')
+      slobs.connect(() => {
+        state = 'main'
+        slobs.request('ScenesService', 'getScenes').then(rScenes => scenes = rScenes)
+      },
+      () => state = 'init')
+    } else if (state === 'main') {
+      slobs.request('ScenesService', 'getScenes').then(rScenes => scenes = rScenes)
     }
   }
 
@@ -31,24 +38,22 @@ process.stdin.on('keypress', (ch, key) => {
       slobs.request('ScenesService', 'activeSceneId').then(aSceneId => {
         tempResources.startPrevSceneId = aSceneId
       })
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Starting')
-        if (iScene) {
-          slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-          slobs.request('AudioService', 'getSources').then(sources => {
-            const iSourcesNames = ['Desktop', 'Mic']
-            const iSources = sources.filter(source => iSourcesNames.includes(source.name))
-            iSources.forEach(source => {
-              slobs.request('SourcesService', 'setMuted', source.sourceId, true)
-            })
+      const iScene = scenes.find(scene => scene.name == 'Starting')
+      if (iScene) {
+        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
+        slobs.request('AudioService', 'getSources').then(sources => {
+          const iSourcesNames = ['Desktop', 'Mic']
+          const iSources = sources.filter(source => iSourcesNames.includes(source.name))
+          iSources.forEach(source => {
+            slobs.request('SourcesService', 'setMuted', source.sourceId, true)
           })
-          const iItem = iScene.nodes.find(item => item.name == 'Start Timer')
-          if (iItem) {
-            slobs.request(iItem.resourceId, 'setVisibility', false)
-            tempResources.startTimer = iItem
-          }
+        })
+        const iItem = iScene.nodes.find(item => item.name == 'Start Timer')
+        if (iItem) {
+          slobs.request(iItem.resourceId, 'setVisibility', false)
+          tempResources.startTimer = iItem
         }
-      })
+      }
     } else if (state === 'start') {
       if (tempResources.startTimer) {
         const iItem = tempResources.startTimer
@@ -100,19 +105,17 @@ process.stdin.on('keypress', (ch, key) => {
       slobs.request('ScenesService', 'activeSceneId').then(aSceneId => {
         tempResources.breakPrevSceneId = aSceneId
       })
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'BRB')
-        if (iScene) {
-          slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-          slobs.request('AudioService', 'getSources').then(sources => {
-            const iSourcesNames = ['Desktop', 'Mic']
-            const iSources = sources.filter(source => iSourcesNames.includes(source.name))
-            iSources.forEach(source => {
-              slobs.request('SourcesService', 'setMuted', source.sourceId, true)
-            })
+      const iScene = scenes.find(scene => scene.name == 'BRB')
+      if (iScene) {
+        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
+        slobs.request('AudioService', 'getSources').then(sources => {
+          const iSourcesNames = ['Desktop', 'Mic']
+          const iSources = sources.filter(source => iSourcesNames.includes(source.name))
+          iSources.forEach(source => {
+            slobs.request('SourcesService', 'setMuted', source.sourceId, true)
           })
-        }
-      })
+        })
+      }
     }
   }
 
@@ -145,19 +148,17 @@ process.stdin.on('keypress', (ch, key) => {
   if (key && key.name == 'f9') {
     if (state === 'main') {
       state = 'end'
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Ending')
-        if (iScene) {
-          slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-          slobs.request('AudioService', 'getSources').then(sources => {
-            const iSourcesNames = ['Desktop', 'Mic']
-            const iSources = sources.filter(source => iSourcesNames.includes(source.name))
-            iSources.forEach(source => {
-              slobs.request('SourcesService', 'setMuted', source.sourceId, true)
-            })
+      const iScene = scenes.find(scene => scene.name == 'Ending')
+      if (iScene) {
+        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
+        slobs.request('AudioService', 'getSources').then(sources => {
+          const iSourcesNames = ['Desktop', 'Mic']
+          const iSources = sources.filter(source => iSourcesNames.includes(source.name))
+          iSources.forEach(source => {
+            slobs.request('SourcesService', 'setMuted', source.sourceId, true)
           })
-        }
-      })
+        })
+      }
     }
   }
 
@@ -171,114 +172,92 @@ process.stdin.on('keypress', (ch, key) => {
   // Q = scene 'Starting'
   if (key && key.name == 'q') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Starting')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'Starting')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // W = scene 'BRB'
   if (key && key.name == 'w') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'BRB')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'BRB')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // E = scene 'Ending'
   if (key && key.name == 'e') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Ending')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'Ending')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // A = scene 'Screen (Monitor 1)'
   if (key && key.name == 'a') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Screen (Monitor 1)')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'Screen (Monitor 1)')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // S = scene 'Screen (Monitor 2)'
   if (key && key.name == 's') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Screen (Monitor 2)')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'Screen (Monitor 2)')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // D = scene 'Chatting'
   if (key && key.name == 'd') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Chatting')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'Chatting')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // F = scene 'Screen (Window Generic)'
   if (key && key.name == 'f') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Screen (Window Generic)')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'Screen (Window Generic)')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // Z = scene 'Game (League of Legends Client)'
   if (key && key.name == 'z') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Game (League of Legends Client)')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'Game (League of Legends Client)')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // X = scene 'Game (League of Legends)'
   if (key && key.name == 'x') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Game (League of Legends)')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'Game (League of Legends)')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // C = scene 'Game (Fullscreen Generic)'
   if (key && key.name == 'c') {
     if (state === 'main') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iScene = scenes.find(scene => scene.name == 'Game (Fullscreen Generic)')
-        slobs.request('ScenesService', 'makeSceneActive', iScene.id)
-      })
+      const iScene = scenes.find(scene => scene.name == 'Game (Fullscreen Generic)')
+      slobs.request('ScenesService', 'makeSceneActive', iScene.id)
     }
   }
 
   // P = hide facecam
   if (key && key.name == 'p') {
     if (state !== 'init') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iItems = scenes.map(scene => {
-          const iItem = scene.nodes.find(item => item.name == 'Camera Capture')
-          if (iItem) return iItem
-        }).filter(item => item)
-        iItems.forEach(iItem => {
-          slobs.request(iItem.resourceId, 'setVisibility', false)
-        })
+      const iItems = scenes.map(scene => {
+        const iItem = scene.nodes.find(item => item.name == 'Camera Capture')
+        if (iItem) return iItem
+      }).filter(item => item)
+      iItems.forEach(iItem => {
+        slobs.request(iItem.resourceId, 'setVisibility', false)
       })
     }
   }
@@ -286,14 +265,12 @@ process.stdin.on('keypress', (ch, key) => {
   // ; = show facecam
   if (!key && ch == ';') {
     if (state !== 'init') {
-      slobs.request('ScenesService', 'getScenes').then(scenes => {
-        const iItems = scenes.map(scene => {
-          const iItem = scene.nodes.find(item => item.name == 'Camera Capture')
-          if (iItem) return iItem
-        }).filter(item => item)
-        iItems.forEach(iItem => {
-          slobs.request(iItem.resourceId, 'setVisibility', true)
-        })
+      const iItems = scenes.map(scene => {
+        const iItem = scene.nodes.find(item => item.name == 'Camera Capture')
+        if (iItem) return iItem
+      }).filter(item => item)
+      iItems.forEach(iItem => {
+        slobs.request(iItem.resourceId, 'setVisibility', true)
       })
     }
   }
