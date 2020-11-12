@@ -1,6 +1,9 @@
 # Config
 config.js
 
+# Mapping PSD
+mapping.psd
+
 # Logs
 logs
 *.log
